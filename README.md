@@ -1,7 +1,6 @@
 # 🌿 Weekly Meal Planner
-(co-written with Claude)
 
-A healthy simple quick-cook meal planner. Build your week from a recipe bank, then generate a shopping list.
+A simple, beautiful meal planner. Build your week from a recipe bank, then generate a shopping list.
 
 **Live demo**: once deployed, your URL will be `https://yourusername.github.io/meal-planner`
 

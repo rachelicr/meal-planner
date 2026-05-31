@@ -4,10 +4,10 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 const WEEKEND = ["Saturday", "Sunday"];
 
 const MEAL_TYPES = [
-  { key: "breakfast", label: "Breakfast", emoji: "☀️", color: "#d97706" },
-  { key: "lunch",     label: "Lunch",     emoji: "🥗", color: "#059669" },
-  { key: "dinner",    label: "Dinner",    emoji: "🍽️", color: "#6366f1" },
-  { key: "pudding",   label: "Pudding",   emoji: "🍫", color: "#db2777" },
+  { key: "breakfast", label: "Breakfast", emoji: "☀️", color: "#dae50a" },
+  { key: "lunch",     label: "Lunch",     emoji: "🥗", color: "#13da69" },
+  { key: "dinner",    label: "Dinner",    emoji: "🍽️", color: "#4547c5" },
+  { key: "pudding",   label: "Pudding",   emoji: "🍫", color: "#c93175" },
 ];
 
 const STAPLES = [
@@ -58,11 +58,60 @@ function categoriseItems(items) {
     });
   });
   const other = items.filter(i => !used.has(i));
-  if (other.length) result["📦 Other"] = other;
+  if (other.length) result["Other"] = other;
   return result;
 }
 
-// ── BACK BUTTON ────────────────────────────────────────────────────────────────
+function downloadText(filename, content) {
+  const blob = new Blob([content], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPlan(week) {
+  const lines = ["WEEK AT A GLANCE", "─".repeat(32), ""];
+  DAYS.forEach(day => {
+    const dayMeals = week[day];
+    const hasAny = MEAL_TYPES.some(m => dayMeals[m.key]);
+    lines.push(day);
+    if (hasAny) {
+      MEAL_TYPES.forEach(({ key, emoji }) => {
+        if (dayMeals[key]) lines.push(`  ${emoji} ${dayMeals[key].name}`);
+      });
+    } else {
+      lines.push("  (no meals planned)");
+    }
+    lines.push("");
+  });
+  downloadText("meal-plan.txt", lines.join("\n"));
+}
+
+function exportShop(week) {
+  const allIngredients = new Set(["Apples"]);
+  DAYS.forEach(day => {
+    MEAL_TYPES.forEach(({ key }) => {
+      const meal = week[day][key];
+      if (meal) meal.ingredients.split("|").forEach(i => allIngredients.add(i.trim()));
+    });
+  });
+  const sorted = Array.from(allIngredients).sort();
+  const categorised = categoriseItems(sorted);
+  const lines = ["SHOPPING LIST", "─".repeat(32), ""];
+  Object.entries(categorised).forEach(([cat, items]) => {
+    lines.push(cat);
+    items.forEach(item => lines.push(`  □ ${item}`));
+    lines.push("");
+  });
+  lines.push("─".repeat(32));
+  lines.push("Kitchen staples — check you have these:");
+  lines.push("  " + STAPLES.join(" · "));
+  downloadText("shopping-list.txt", lines.join("\n"));
+}
+
 function BackButton({ onClick }) {
   return (
     <button onClick={onClick} style={{
@@ -70,6 +119,16 @@ function BackButton({ onClick }) {
       padding: "6px 14px", borderRadius: "20px", cursor: "pointer",
       fontFamily: "sans-serif", fontSize: "13px", marginBottom: "12px",
     }}>← Back</button>
+  );
+}
+
+function ExportButton({ onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)",
+      color: "#fff", padding: "6px 14px", borderRadius: "20px", cursor: "pointer",
+      fontFamily: "sans-serif", fontSize: "13px", marginBottom: "12px", marginLeft: 8,
+    }}>⬇ Export</button>
   );
 }
 
@@ -102,26 +161,36 @@ function PickingScreen({ picking, week, recipes, onSelect, onClear, onBack }) {
           const isSelected = current && current.id === meal.id;
           return (
             <button key={meal.id} onClick={() => onSelect(day, mealType, meal)} style={{
-              width: "100%", textAlign: "left", padding: 16, marginBottom: 10,
+              width: "100%", textAlign: "left", padding: 0, marginBottom: 10,
               background: isSelected ? `${mt.color}33` : "rgba(255,255,255,0.05)",
               border: `1px solid ${isSelected ? mt.color : "rgba(255,255,255,0.1)"}`,
-              borderRadius: 12, cursor: "pointer",
+              borderRadius: 12, cursor: "pointer", overflow: "hidden",
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: "#fff", fontSize: 16, marginBottom: 4, fontFamily: "Georgia, serif" }}>{meal.name}</div>
-                  <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, fontFamily: "sans-serif", lineHeight: 1.5 }}>{meal.desc}</div>
-                  <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 4 }}>
-                    {meal.ingredients.split("|").map(ing => (
-                      <span key={ing} style={{
-                        fontSize: 10, padding: "2px 8px", borderRadius: 10,
-                        background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)",
-                        fontFamily: "sans-serif",
-                      }}>{ing}</span>
-                    ))}
+              {/* Meal image — only shown if image field is set */}
+              {meal.image && meal.image.trim() !== "" && (
+                <img
+                  src={meal.image}
+                  alt={meal.name}
+                  style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
+                />
+              )}
+              <div style={{ padding: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: "#fff", fontSize: 16, marginBottom: 4, fontFamily: "Georgia, serif" }}>{meal.name}</div>
+                    <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, fontFamily: "sans-serif", lineHeight: 1.5 }}>{meal.desc}</div>
+                    <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {meal.ingredients.split("|").map(ing => (
+                        <span key={ing} style={{
+                          fontSize: 10, padding: "2px 8px", borderRadius: 10,
+                          background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)",
+                          fontFamily: "sans-serif",
+                        }}>{ing}</span>
+                      ))}
+                    </div>
                   </div>
+                  {isSelected && <span style={{ color: mt.color, fontSize: 20, marginLeft: 10 }}>✓</span>}
                 </div>
-                {isSelected && <span style={{ color: mt.color, fontSize: 20, marginLeft: 10 }}>✓</span>}
               </div>
             </button>
           );
@@ -150,7 +219,10 @@ function ShoppingScreen({ week, onBack }) {
   return (
     <div style={{ minHeight: "100vh", background: "#0f1a0f", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
       <div style={{ background: "linear-gradient(135deg, #2d4a2d, #4a7c59)", padding: "24px 20px 20px" }}>
-        <BackButton onClick={onBack} />
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <BackButton onClick={onBack} />
+          <ExportButton onClick={() => exportShop(week)} />
+        </div>
         <h2 style={{ color: "#fff", margin: 0, fontSize: 24, fontWeight: "normal" }}>🛒 Shopping List</h2>
         <p style={{ color: "#a8d5b5", margin: "4px 0 0", fontFamily: "sans-serif", fontSize: 13 }}>Tap to check off as you shop</p>
       </div>
@@ -200,48 +272,46 @@ function SummaryScreen({ week, onBack }) {
   return (
     <div style={{ minHeight: "100vh", background: "#0f1a0f", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
       <div style={{ background: "linear-gradient(135deg, #2d4a2d, #4a7c59)", padding: "24px 20px 20px" }}>
-        <BackButton onClick={onBack} />
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <BackButton onClick={onBack} />
+          <ExportButton onClick={() => exportPlan(week)} />
+        </div>
         <h2 style={{ color: "#fff", margin: 0, fontSize: 24, fontWeight: "normal" }}>📋 Week at a Glance</h2>
-        <p style={{ color: "#a8d5b5", margin: "4px 0 0", fontFamily: "sans-serif", fontSize: 13 }}>Screenshot this to save your plan</p>
+        <p style={{ color: "#a8d5b5", margin: "4px 0 0", fontFamily: "sans-serif", fontSize: 13 }}>Screenshot or export to save your plan</p>
       </div>
-      <div style={{ padding: 16 }}>
-        {DAYS.map(day => {
-          const isWeekend = WEEKEND.includes(day);
-          const dayMeals = week[day];
-          const hasAny = MEAL_TYPES.some(m => dayMeals[m.key]);
-          return (
-            <div key={day} style={{
-              marginBottom: 10, borderRadius: 14, overflow: "hidden",
-              border: `1px solid ${isWeekend ? "rgba(106,170,106,0.25)" : "rgba(255,255,255,0.08)"}`,
-              background: isWeekend ? "rgba(106,170,106,0.06)" : "rgba(255,255,255,0.03)",
-            }}>
-              <div style={{
-                padding: "10px 16px",
-                background: isWeekend ? "rgba(106,170,106,0.15)" : "rgba(255,255,255,0.06)",
-                display: "flex", alignItems: "center", gap: 8,
-              }}>
-                <span style={{ color: "#fff", fontSize: 15 }}>{day}</span>
-                <span style={{ fontSize: 10, color: isWeekend ? "#6aaa7a" : "rgba(255,255,255,0.3)", fontFamily: "sans-serif", textTransform: "uppercase", letterSpacing: 1 }}>
-                  {isWeekend ? "🌿 Weekend" : "⚡ Weekday"}
-                </span>
-              </div>
-              <div style={{ padding: "8px 16px 12px" }}>
-                {hasAny ? MEAL_TYPES.map(({ key, label, emoji, color }) => {
-                  const meal = dayMeals[key];
-                  if (!meal) return null;
-                  return (
-                    <div key={key} style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 5 }}>
-                      <span style={{ fontSize: 11, color, fontFamily: "sans-serif", textTransform: "uppercase", letterSpacing: 1, flexShrink: 0, minWidth: 70 }}>{emoji} {label}</span>
-                      <span style={{ fontSize: 14, color: "rgba(255,255,255,0.85)" }}>{meal.name}</span>
-                    </div>
-                  );
-                }) : (
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.2)", fontFamily: "sans-serif" }}>No meals planned yet</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      <div style={{ padding: 16, overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "sans-serif" }}>
+          <thead>
+            <tr>
+              <th style={{ padding: "8px 12px", textAlign: "left", color: "#6aaa7a", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", borderBottom: "1px solid rgba(255,255,255,0.1)" }}></th>
+              {MEAL_TYPES.map(({ label, emoji, color }) => (
+                <th key={label} style={{ padding: "8px 12px", textAlign: "left", color, fontSize: 11, letterSpacing: 2, textTransform: "uppercase", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+                  {emoji} {label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {DAYS.map((day, i) => {
+              const isWeekend = WEEKEND.includes(day);
+              const dayMeals = week[day];
+              return (
+                <tr key={day} style={{ background: isWeekend ? "rgba(106,170,106,0.06)" : i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                  <td style={{ padding: "10px 12px", color: isWeekend ? "#6aaa7a" : "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{day}</td>
+                  {MEAL_TYPES.map(({ key }) => (
+                    <td key={key} style={{ padding: "10px 12px", fontSize: 13, color: dayMeals[key] ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.15)", borderBottom: "1px solid rgba(255,255,255,0.05)", verticalAlign: "top" }}>
+                      {/* Thumbnail if image exists */}
+                      {dayMeals[key] && dayMeals[key].image && dayMeals[key].image.trim() !== "" && (
+                        <img src={dayMeals[key].image} alt={dayMeals[key].name} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, display: "block", marginBottom: 4 }} />
+                      )}
+                      {dayMeals[key] ? dayMeals[key].name : "—"}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -380,11 +450,16 @@ function App() {
                         border: "none", borderTop: "1px solid rgba(255,255,255,0.05)",
                         cursor: "pointer", textAlign: "left",
                       }}>
-                        <div style={{
-                          width: 32, height: 32, borderRadius: 8, flexShrink: 0,
-                          background: meal ? `${color}33` : "rgba(255,255,255,0.07)",
-                          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
-                        }}>{emoji}</div>
+                        {/* Thumbnail in plan view if image exists */}
+                        {meal && meal.image && meal.image.trim() !== "" ? (
+                          <img src={meal.image} alt={meal.name} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
+                        ) : (
+                          <div style={{
+                            width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                            background: meal ? `${color}33` : "rgba(255,255,255,0.07)",
+                            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
+                          }}>{emoji}</div>
+                        )}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 10, fontFamily: "sans-serif", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2, color: meal ? color : "rgba(255,255,255,0.3)" }}>{label}</div>
                           <div style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: meal ? "#fff" : "rgba(255,255,255,0.25)", fontFamily: meal ? "Georgia, serif" : "sans-serif" }}>
