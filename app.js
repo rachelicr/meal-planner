@@ -269,6 +269,8 @@ function ShoppingScreen({ week, onBack }) {
 
 // ── SUMMARY SCREEN ─────────────────────────────────────────────────────────────
 function SummaryScreen({ week, onBack }) {
+  const summaryGridTemplate = "minmax(120px, 1.2fr) repeat(4, minmax(180px, 1fr))";
+
   return (
     <div style={{ minHeight: "100vh", background: "#eaa613", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
       <div style={{ background: "linear-gradient(135deg, #eaa613, #4a7c59)", padding: "24px 20px 20px" }}>
@@ -280,38 +282,88 @@ function SummaryScreen({ week, onBack }) {
         <p style={{ color: "#a8d5b5", margin: "4px 0 0", fontFamily: "sans-serif", fontSize: 13 }}>Screenshot or export to save your plan</p>
       </div>
       <div style={{ padding: 16, overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "sans-serif" }}>
-          <thead>
-            <tr>
-              <th style={{ padding: "8px 12px", textAlign: "left", color: "#6aaa7a", fontSize: 11, letterSpacing: 2, textTransform: "uppercase", borderBottom: "1px solid rgba(255,255,255,0.1)" }}></th>
-              {MEAL_TYPES.map(({ label, emoji, color }) => (
-                <th key={label} style={{ padding: "8px 12px", textAlign: "left", color, fontSize: 11, letterSpacing: 2, textTransform: "uppercase", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                  {emoji} {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
+        <div style={{ minWidth: 860 }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: summaryGridTemplate,
+            gap: 10,
+            alignItems: "stretch",
+            fontFamily: "sans-serif",
+          }}>
+            <div></div>
+            {MEAL_TYPES.map(({ label, emoji, color }) => (
+              <div key={label} style={{
+                padding: "10px 12px",
+                color,
+                fontSize: 11,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                borderBottom: "1px solid rgba(255,255,255,0.12)",
+                fontWeight: 700,
+              }}>
+                {emoji} {label}
+              </div>
+            ))}
+
             {DAYS.map((day, i) => {
               const isWeekend = WEEKEND.includes(day);
               const dayMeals = week[day];
+              const rowTone = isWeekend
+                ? "rgba(106,170,106,0.12)"
+                : i % 2 === 0
+                  ? "rgba(255,255,255,0.05)"
+                  : "rgba(255,255,255,0.03)";
+
               return (
-                <tr key={day} style={{ background: isWeekend ? "rgba(106,170,106,0.06)" : i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
-                  <td style={{ padding: "10px 12px", color: isWeekend ? "#6aaa7a" : "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{day}</td>
-                  {MEAL_TYPES.map(({ key }) => (
-                    <td key={key} style={{ padding: "10px 12px", fontSize: 13, color: dayMeals[key] ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.15)", borderBottom: "1px solid rgba(255,255,255,0.05)", verticalAlign: "top" }}>
-                      {/* Thumbnail if image exists */}
-                      {dayMeals[key] && dayMeals[key].image && dayMeals[key].image.trim() !== "" && (
-                        <img src={dayMeals[key].image} alt={dayMeals[key].name} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, display: "block", marginBottom: 4 }} />
-                      )}
-                      {dayMeals[key] ? dayMeals[key].name : "—"}
-                    </td>
-                  ))}
-                </tr>
+                <React.Fragment key={day}>
+                  <div style={{
+                    padding: "16px 14px",
+                    borderRadius: 12,
+                    background: rowTone,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: isWeekend ? "#6aaa7a" : "rgba(255,255,255,0.78)",
+                    fontSize: 15,
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    whiteSpace: "nowrap",
+                  }}>{day}</div>
+                  {MEAL_TYPES.map(({ key, color }) => {
+                    const meal = dayMeals[key];
+                    return (
+                      <div key={`${day}-${key}`} style={{
+                        padding: "12px",
+                        borderRadius: 12,
+                        background: meal ? `${color}22` : rowTone,
+                        border: `1px solid ${meal ? `${color}55` : "rgba(255,255,255,0.08)"}`,
+                        minHeight: 110,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "flex-start",
+                        color: meal ? "rgba(255,255,255,0.88)" : "rgba(255,255,255,0.22)",
+                      }}>
+                        {meal && meal.image && meal.image.trim() !== "" && (
+                          <img
+                            src={meal.image}
+                            alt={meal.name}
+                            style={{ width: "100%", height: 68, objectFit: "cover", borderRadius: 8, display: "block", marginBottom: 10 }}
+                          />
+                        )}
+                        <div style={{
+                          fontSize: 14,
+                          lineHeight: 1.35,
+                          fontFamily: meal ? "Georgia, serif" : "sans-serif",
+                        }}>
+                          {meal ? meal.name : "—"}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
               );
             })}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   );
