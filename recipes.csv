@@ -1,5 +1,5 @@
 type,id,name,weekend_only,desc,ingredients,image
-breakfast,b1,Yoghurt Jar,false,"Full fat yoghurt + frozen blueberries + ground flaxseed + walnuts + optional honey. Make the night before in a jar — grab from fridge on the way out.","Full fat natural yoghurt|Frozen blueberries|Ground flaxseed|Walnuts|Honey",images/rings.png
+breakfast,b1,Yoghurt Jar,false,"Full fat yoghurt + frozen blueberries + ground flaxseed + walnuts + optional honey. Make the night before in a jar — grab from fridge on the way out.","Full fat natural yoghurt|Frozen blueberries|Ground flaxseed|Walnuts|Honey",
 breakfast,b2,Nut Butter & Banana Oatcakes,false,"Nairn's oatcakes + Brain Food nut butter + sliced banana. Pack in a container, eat at your desk.","Nairn's oatcakes|Brain Food nut butter|Banana",
 breakfast,b3,Smoked Salmon Oatcakes,false,"Nairn's oatcakes + smoked salmon + squeeze of lemon. Two minutes, high protein.","Nairn's oatcakes|Smoked salmon|Lemon",
 breakfast,b4,Scrambled Eggs & Mushrooms,false,"Eggs scrambled with garlic-fried mushrooms + spinach wilted in at the end. Great for a slower morning.","Eggs|Mushrooms|Garlic|Spinach|Olive oil",

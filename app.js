@@ -140,7 +140,7 @@ function PickingScreen({ picking, week, recipes, onSelect, onClear, onBack }) {
   const current = week[day][mealType];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#aca596", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
+    <div style={{ minHeight: "100vh", background: "#837f76", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
       <div style={{ background: `linear-gradient(135deg, ${mt.color}cc, ${mt.color}66)`, padding: "24px 20px 20px" }}>
         <BackButton onClick={onBack} />
         <p style={{ color: "rgba(255,255,255,0.7)", margin: "0 0 4px", fontFamily: "sans-serif", fontSize: "11px", letterSpacing: "2px", textTransform: "uppercase" }}>
@@ -217,7 +217,7 @@ function ShoppingScreen({ week, onBack }) {
   const toggle = (item) => setChecked(c => ({ ...c, [item]: !c[item] }));
 
   return (
-    <div style={{ minHeight: "100vh", background: "#aca596", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
+    <div style={{ minHeight: "100vh", background: "#837f76", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
       <div style={{ background: "linear-gradient(135deg, #2d4a2d, #4a7c59)", padding: "24px 20px 20px" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <BackButton onClick={onBack} />
@@ -272,8 +272,8 @@ function SummaryScreen({ week, onBack }) {
   const summaryGridTemplate = "minmax(120px, 1.2fr) repeat(4, minmax(180px, 1fr))";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#aca596", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
-      <div style={{ background: "linear-gradient(135deg, #aca596, #4a7c59)", padding: "24px 20px 20px" }}>
+    <div style={{ minHeight: "100vh", background: "#837f76", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
+      <div style={{ background: "linear-gradient(135deg, #837f76, #4a7c59)", padding: "24px 20px 20px" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <BackButton onClick={onBack} />
           <ExportButton onClick={() => exportPlan(week)} />
@@ -416,7 +416,7 @@ function App() {
   const pct = Math.round((filledCount / totalCount) * 100);
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#aca596", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100vh", background: "#837f76", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <p style={{ color: "#6aaa7a", fontFamily: "sans-serif" }}>Loading recipes...</p>
     </div>
   );
@@ -430,9 +430,9 @@ function App() {
   if (screen === "summary") return <SummaryScreen week={week} onBack={() => setScreen("plan")} />;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#aca596", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
+    <div style={{ minHeight: "100vh", background: "#837f76", fontFamily: "Georgia, serif", paddingBottom: 40 }}>
       <div style={{
-        background: "linear-gradient(135deg, #1a2e1a 0%, #aca596 60%, #3d6b3d 100%)",
+        background: "linear-gradient(135deg, #1a2e1a 0%, #837f76 60%, #3d6b3d 100%)",
         padding: "32px 20px 24px", position: "relative", overflow: "hidden",
       }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: "radial-gradient(circle at 80% 20%, rgba(106,170,106,0.08) 0%, transparent 50%)" }} />
